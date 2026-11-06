@@ -157,7 +157,7 @@ BEGIN
                 LEAD(prd_start_dt) OVER (
                     PARTITION BY prd_key
                     ORDER BY prd_start_dt
-                ) - 1 AS DATE
+                ) - INTERVAL '1 day' AS DATE
             ) AS prd_end_dt -- Set the end date to one day before the next product start_dt.
 
         FROM bronze.crm_prd_info;
