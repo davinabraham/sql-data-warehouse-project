@@ -93,7 +93,7 @@ BEGIN
                 ROW_NUMBER() OVER (
                     PARTITION BY cst_id
                     ORDER BY cst_create_date DESC
-                ) AS flag_last -- Only keeps latest cst_id when there are duplicates
+                ) AS flag_last -- Retain the latest record for each customer ID.
 
             FROM bronze.crm_cust_info
 
@@ -158,7 +158,7 @@ BEGIN
                     PARTITION BY prd_key
                     ORDER BY prd_start_dt
                 ) - 1 AS DATE
-            ) AS prd_end_dt -- This is to help fix prd_end_dt<prd_start_dt & overlapping date ranges
+            ) AS prd_end_dt -- Set the end date to one day before the next product start_dt.
 
         FROM bronze.crm_prd_info;
 
@@ -217,7 +217,7 @@ BEGIN
                 THEN NULL
                 ELSE TO_DATE(sls_due_dt::TEXT, 'YYYYMMDD')
             END AS sls_due_dt,
-            -- Any Date formatting and nulls any invalid dates
+            -- Validate YYYYMMDD date values, convert them to DATE, and return NULL for invalid-format values.
 
             CASE
                 WHEN sls_sales IS NULL
