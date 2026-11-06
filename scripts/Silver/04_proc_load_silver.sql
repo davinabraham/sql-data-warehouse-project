@@ -93,7 +93,7 @@ BEGIN
                 ROW_NUMBER() OVER (
                     PARTITION BY cst_id
                     ORDER BY cst_create_date DESC
-                ) AS flag_last
+                ) AS flag_last -- Only keeps latest cst_id when there are duplicates
 
             FROM bronze.crm_cust_info
 
@@ -158,7 +158,7 @@ BEGIN
                     PARTITION BY prd_key
                     ORDER BY prd_start_dt
                 ) - 1 AS DATE
-            ) AS prd_end_dt
+            ) AS prd_end_dt -- This is to help fix prd_end_dt<prd_start_dt & overlapping date ranges
 
         FROM bronze.crm_prd_info;
 
@@ -217,6 +217,7 @@ BEGIN
                 THEN NULL
                 ELSE TO_DATE(sls_due_dt::TEXT, 'YYYYMMDD')
             END AS sls_due_dt,
+            -- Any Date formatting and nulls any invalid dates
 
             CASE
                 WHEN sls_sales IS NULL
@@ -230,7 +231,7 @@ BEGIN
 
             CASE
                 WHEN sls_price IS NULL OR sls_price <= 0
-                THEN sls_sales / NULLIF(sls_quantity, 0)
+                THEN sls_sales / NULLIF(sls_quantity, 0) -- NULLIF prevents division by zero by returning NULL when quantity is zero.
                 ELSE sls_price
             END AS sls_price
 
